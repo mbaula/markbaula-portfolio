@@ -38,10 +38,15 @@ export function PortfolioAbout() {
             id="about"
             className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-gradient-to-b from-[#0a0a0a] via-[#0d0d0d] to-[#0a0a0a] py-20"
         >
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_20%,rgba(255,200,100,0.04),transparent)]" />
-            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-neutral-700/40 to-transparent" />
+            {/* Animated grain — neutral, distinct from Experience (different drift) */}
+            <div
+                className="about-bg-noise pointer-events-none absolute inset-0 z-0 opacity-[0.18]"
+                aria-hidden
+            />
+            <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_20%,rgba(255,200,100,0.04),transparent)]" />
+            <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-0 h-px bg-gradient-to-r from-transparent via-neutral-700/40 to-transparent" />
 
-            <div className="relative mx-6 flex w-[min(1120px,100%)] flex-col items-center gap-12 sm:flex-row sm:items-center sm:gap-16">
+            <div className="relative z-10 mx-6 flex w-[min(1120px,100%)] flex-col items-center gap-12 sm:flex-row sm:items-center sm:gap-16">
                 <div
                     className={`group relative shrink-0 transition-all duration-700 ease-out ${visible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}
                 >
