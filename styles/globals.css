@@ -251,4 +251,39 @@
             pointer-events: none;
         }
     }
+
+    @keyframes experienceRowIn {
+        from {
+            opacity: 0;
+            transform: translateY(14px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .experience-list.in-view .experience-row {
+        animation: experienceRowIn 0.5s ease-out forwards;
+    }
+
+    .experience-row {
+        opacity: 0;
+    }
+
+    @keyframes experienceNoise {
+        0% {
+            background-position: 0 0;
+        }
+        100% {
+            background-position: 128px 96px;
+        }
+    }
+
+    .experience-bg-noise {
+        background-image: url('/images/noise.svg');
+        background-repeat: repeat;
+        background-size: 128px 96px;
+        animation: experienceNoise 25s linear infinite;
+    }
 }

@@ -1,7 +1,6 @@
 'use client';
 import { useEffect, useRef, useCallback, useState } from 'react';
-import { SquareArrowDownRight, FastForward, X, Sparkles } from 'lucide-react';
-import Link from 'next/link';
+import { FastForward, X, Sparkles } from 'lucide-react';
 
 const CLICKABLE_ANCHORS = [
     { xPct: 0.15, yPct: 0.25 },
@@ -432,17 +431,6 @@ export function PortfolioHero() {
                 </span>
             </div>
 
-            <Link
-                href="/virtual"
-                className="group absolute bottom-8 right-6 flex flex-col items-center text-xs text-neutral-300 sm:bottom-10 sm:right-10 sm:text-sm"
-            >
-                <span className="mb-1 rounded-md border border-neutral-600 bg-neutral-900/80 p-2 shadow-lg backdrop-blur transition-all duration-300 group-hover:border-neutral-400 group-hover:bg-neutral-800/90 group-hover:rotate-[-12deg] animate-[ctaPulse_2.5s_ease-in-out_infinite]">
-                    <SquareArrowDownRight className="h-10 w-10 animate-[wiggle_2s_ease-in-out_infinite_3s] stroke-[1] sm:h-14 sm:w-14" />
-                </span>
-                <span className="font-serif italic tracking-wide text-neutral-400 transition-colors group-hover:text-neutral-100">
-                    Click me!
-                </span>
-            </Link>
         </section>
     );
 }
