@@ -48,8 +48,16 @@ export function PortfolioNavbar() {
             </nav>
 
             {open && (
-                <div className="fixed inset-x-0 top-16 z-40 mx-auto w-[min(360px,100%-2rem)] rounded-2xl border border-neutral-700 bg-neutral-900/95 px-5 py-4 shadow-xl sm:hidden">
-                    <ul className="flex flex-col gap-2 text-sm">
+                <div className="fixed inset-0 z-40 flex min-h-screen min-w-full flex-col items-center justify-center bg-neutral-900 sm:hidden">
+                    <button
+                        type="button"
+                        onClick={() => setOpen(false)}
+                        className="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full border border-neutral-700 bg-neutral-800 text-neutral-100 hover:bg-neutral-700 hover:text-white"
+                        aria-label="Close menu"
+                    >
+                        <X className="h-6 w-6" />
+                    </button>
+                    <ul className="flex flex-col items-center gap-6 text-lg">
                         {navItems.map((item, index) => (
                             <li key={item.label}>
                                 <Link
@@ -57,7 +65,7 @@ export function PortfolioNavbar() {
                                     onClick={() => setOpen(false)}
                                     className="flex items-center gap-2 py-1 text-neutral-100 hover:text-white hover:italic transition-colors no-underline"
                                 >
-                                    <span className="font-serif italic text-xs text-neutral-500">
+                                    <span className="font-serif italic text-sm text-neutral-500">
                                         {index + 1}.
                                     </span>
                                     {item.label}
