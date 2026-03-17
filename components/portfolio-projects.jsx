@@ -3,7 +3,6 @@
 export function PortfolioProjects() {
     return (
         <section
-            id="projects"
             className="w-full bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#0a0a0a] pb-24 pt-16"
         >
             <div className="mx-auto w-[min(1120px,100%-1.5rem)]">

@@ -302,4 +302,19 @@
         background-size: 120px 100px;
         animation: aboutNoise 18s linear infinite;
     }
+
+    @keyframes parallaxNodePulse {
+        0%, 100% {
+            opacity: 0.35;
+            r: 0.18;
+        }
+        50% {
+            opacity: 0.9;
+            r: 0.3;
+        }
+    }
+
+    .parallax-node-pulse {
+        animation: parallaxNodePulse 3s ease-in-out infinite;
+    }
 }
