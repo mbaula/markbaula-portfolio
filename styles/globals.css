@@ -317,4 +317,46 @@
     .parallax-node-pulse {
         animation: parallaxNodePulse 3s ease-in-out infinite;
     }
+
+    @keyframes projectCardIn {
+        from {
+            opacity: 0;
+            transform: translateY(24px) scale(0.97);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .project-card {
+        opacity: 0;
+    }
+
+    .projects-grid.in-view .project-card {
+        animation: projectCardIn 0.55s ease-out forwards;
+    }
+
+    @keyframes floatingAccent {
+        0%, 100% {
+            transform: translateY(0) translateX(0);
+            opacity: 0.4;
+        }
+        25% {
+            transform: translateY(-12px) translateX(4px);
+            opacity: 0.6;
+        }
+        50% {
+            transform: translateY(-6px) translateX(-3px);
+            opacity: 0.35;
+        }
+        75% {
+            transform: translateY(-18px) translateX(2px);
+            opacity: 0.55;
+        }
+    }
+
+    .floating-accent {
+        animation: floatingAccent 20s ease-in-out infinite;
+    }
 }

@@ -1,8 +1,22 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Github, Globe } from 'lucide-react';
+
+const STAGGER_DELAY_MS = 120;
+
+const FLOATING_ACCENTS = [
+    { type: 'circle', size: 6, x: 8, y: 15, duration: 22, delay: 0 },
+    { type: 'circle', size: 4, x: 92, y: 25, duration: 26, delay: 3 },
+    { type: 'ring', size: 10, x: 5, y: 55, duration: 30, delay: 1 },
+    { type: 'ring', size: 8, x: 95, y: 70, duration: 24, delay: 5 },
+    { type: 'dot', size: 3, x: 12, y: 85, duration: 20, delay: 2 },
+    { type: 'dot', size: 2, x: 88, y: 40, duration: 18, delay: 4 },
+    { type: 'circle', size: 5, x: 3, y: 35, duration: 28, delay: 6 },
+    { type: 'ring', size: 6, x: 97, y: 90, duration: 25, delay: 0 },
+];
 
 const projects = [
     {
@@ -37,7 +51,7 @@ const projects = [
         title: 'Snake Game (ARM Cortex-M3)',
         description:
             'Classic Snake game implemented on an ARM Cortex-M3 development board in C. Supports wall collision game-over, self-collision detection, growth on apple consumption, and score display via on-board LEDs, with reset via physical push button.',
-        image: '/images/projects/snake-game.png',
+        image: '/images/projects/snake-game.webp',
         tech: ['C', 'ARM Cortex-M3', 'Embedded Systems'],
         website: 'https://www.youtube.com/watch?v=46SF3pjkcG4',
         github: '',
@@ -157,7 +171,7 @@ function ProjectCard({ project }) {
                     {tech.map((t) => (
                         <span
                             key={t}
-                            className="rounded-full bg-neutral-900/80 px-2 py-0.5 text-[0.65rem] uppercase tracking-wide text-neutral-400"
+                            className="tech-tag rounded-full bg-neutral-900/80 px-2 py-0.5 text-[0.65rem] uppercase tracking-wide text-neutral-400 transition-all duration-200 hover:-translate-y-0.5 hover:bg-neutral-800 hover:text-neutral-200 hover:shadow-[0_4px_12px_-2px_rgba(255,255,255,0.08)]"
                         >
                             {t}
                         </span>
@@ -169,18 +183,66 @@ function ProjectCard({ project }) {
 }
 
 export function PortfolioProjects() {
+    const gridRef = useRef(null);
+    const [inView, setInView] = useState(false);
+
+    useEffect(() => {
+        const el = gridRef.current;
+        if (!el) return;
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    setInView(true);
+                    observer.disconnect();
+                }
+            },
+            { threshold: 0.15 }
+        );
+
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, []);
+
     return (
-        <section className="w-full bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#0a0a0a] pb-24 pt-16">
-            <div className="mx-auto w-[min(1120px,100%-1.5rem)]">
-                <div className="mb-6 text-center sm:mb-10">
-                    <p className="mt-2 text-sm text-neutral-400 sm:text-base">
+        <section className="relative w-full overflow-hidden bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#0a0a0a] pb-24 pt-16">
+            {/* Floating accent elements */}
+            <div className="pointer-events-none absolute inset-0" aria-hidden>
+                {FLOATING_ACCENTS.map((accent, i) => (
+                    <div
+                        key={i}
+                        className={`floating-accent absolute ${accent.type === 'ring' ? 'rounded-full border border-neutral-700/30' : 'rounded-full bg-neutral-600/20'}`}
+                        style={{
+                            width: accent.size,
+                            height: accent.size,
+                            left: `${accent.x}%`,
+                            top: `${accent.y}%`,
+                            animationDuration: `${accent.duration}s`,
+                            animationDelay: `${accent.delay}s`,
+                        }}
+                    />
+                ))}
+            </div>
+
+            <div className="relative mx-auto w-[min(1120px,100%-1.5rem)]">
+                <div className="mb-8 text-center sm:mb-12">
+                    <p className="text-lg text-neutral-400 sm:text-xl md:text-2xl">
                         A snapshot of things I&apos;ve built in my free time.
                     </p>
                 </div>
 
-                <div className="grid gap-6 sm:grid-cols-2 sm:gap-8">
-                    {projects.map((project) => (
-                        <ProjectCard key={project.title} project={project} />
+                <div
+                    ref={gridRef}
+                    className={`projects-grid grid gap-6 sm:grid-cols-2 sm:gap-8 ${inView ? 'in-view' : ''}`}
+                >
+                    {projects.map((project, index) => (
+                        <div
+                            key={project.title}
+                            className="project-card"
+                            style={{ animationDelay: `${index * STAGGER_DELAY_MS}ms` }}
+                        >
+                            <ProjectCard project={project} />
+                        </div>
                     ))}
                 </div>
             </div>
