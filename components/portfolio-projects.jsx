@@ -6,13 +6,41 @@ import { Github, Globe } from 'lucide-react';
 
 const projects = [
     {
-        title: 'Pawsitive Match',
+        title: 'Mental Health Journal',
+        description:
+            'Mental health journaling app that performs real-time NLP analysis on entries using a hybrid ML pipeline: fine-tuned DistilBERT for multi-label emotion detection (28 emotions) and topic identification, and TF-IDF + Linear SVM for binary sentiment classification on Sentiment140. Models served via FastAPI; frontend built with React, Vite, and Tailwind.',
+        image: '/images/projects/sentiment-analyzer.jpeg',
+        imageContain: true,
+        tech: [
+            'PyTorch',
+            'Hugging Face Transformers',
+            'scikit-learn',
+            'FastAPI',
+            'React',
+            'Vite',
+            'Tailwind CSS',
+        ],
+        website: 'https://github.com/mbaula/SentimentAnalyzer',
+        github: 'https://github.com/mbaula/SentimentAnalyzer',
+    },
+    {
+        title: 'PawsitiveMatch',
         description:
             'PawsitiveMatch is a full-stack web app designed to connect pet owners looking to rehome their pets with potential adopters. The platform features full authentication and pet listing management workflows, search and filtering functionality for available pets, and an adoption request system.',
-        image: '/images/projects/pawsitive-match.jpeg',
+        image: '/images/projects/pawsitive-match.png',
         tech: ['TypeScript', 'Express', 'Node.js', 'MongoDB', 'React', 'Vercel'],
         website: 'https://pawsitive-match-self.vercel.app/',
         github: 'https://github.com/mbaula/PawsitiveMatch',
+        footnote: 'Uses Render free tier — API may take ~1 min to spin up on first load.',
+    },
+    {
+        title: 'Snake Game (ARM Cortex-M3)',
+        description:
+            'Classic Snake game implemented on an ARM Cortex-M3 development board in C. Supports wall collision game-over, self-collision detection, growth on apple consumption, and score display via on-board LEDs, with reset via physical push button.',
+        image: '/images/projects/snake-game.png',
+        tech: ['C', 'ARM Cortex-M3', 'Embedded Systems'],
+        website: 'https://www.youtube.com/watch?v=46SF3pjkcG4',
+        github: '',
     },
     {
         title: 'Visimulate',
@@ -23,10 +51,35 @@ const projects = [
         website: 'https://visimulate.netlify.app/',
         github: 'https://github.com/mbaula/ViSimulate',
     },
+    {
+        title: 'JettBot',
+        description:
+            'A feature-rich single-guild Discord bot built with JavaScript, Discord.js, Sequelize, and Distube. Includes a full economy system with a database, gambling game commands (roulette, blackjack, slots), Valorant-themed features (random agents, skin gacha), and music playback.',
+        image: '/images/projects/jettbot.png',
+        tech: ['JavaScript', 'Node.js', 'Discord.js'],
+        website: 'https://github.com/mbaula/JettBot',
+        github: 'https://github.com/mbaula/JettBot',
+        footnote: 'Used daily by 200+ people in a personal Discord server.',
+    },
+    {
+        title: 'DeepLearning.AI Specialization',
+        description:
+            'A five-course Coursera specialization covering neural networks and deep learning, hyperparameter tuning, structured ML projects, convolutional networks, and sequence models, with hands-on implementations in TensorFlow and Python.',
+        image: '/images/projects/deeplearning-ai.png',
+        tech: [
+            'TensorFlow',
+            'Python',
+            'Deep Learning',
+            'Transformers',
+            'Hyperparameter Tuning',
+            'NLP',
+        ],
+        website: 'https://www.coursera.org/account/accomplishments/specialization/QWA5PZ4VFZ2H?utm_source=link&utm_medium=certificate&utm_content=cert_image&utm_campaign=sharing_cta&utm_product=s12n'
+    },
 ];
 
 function ProjectCard({ project }) {
-    const { title, description, image, tech, website, github } = project;
+    const { title, description, image, imageContain, tech, website, github, footnote } = project;
 
     return (
         <Link
@@ -44,7 +97,7 @@ function ProjectCard({ project }) {
                     src={image}
                     alt={`Screenshot of ${title} project`}
                     fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                    className={`transition-transform duration-300 group-hover:scale-[1.03] ${imageContain ? 'object-contain' : 'object-cover'}`}
                     sizes="(max-width: 768px) 100vw, 50vw"
                     priority={false}
                 />
@@ -94,6 +147,12 @@ function ProjectCard({ project }) {
                     {description}
                 </p>
 
+                {footnote && (
+                    <p className="text-[0.65rem] italic text-neutral-500">
+                        {footnote}
+                    </p>
+                )}
+
                 <div className="mt-auto flex flex-wrap gap-1.5 pt-1">
                     {tech.map((t) => (
                         <span
@@ -114,7 +173,6 @@ export function PortfolioProjects() {
         <section className="w-full bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#0a0a0a] pb-24 pt-16">
             <div className="mx-auto w-[min(1120px,100%-1.5rem)]">
                 <div className="mb-6 text-center sm:mb-10">
-                    <h2 className="font-heading text-2xl sm:text-3xl">Projects</h2>
                     <p className="mt-2 text-sm text-neutral-400 sm:text-base">
                         A snapshot of things I&apos;ve built in my free time.
                     </p>
