@@ -356,6 +356,17 @@ export function PortfolioHero() {
             <div className="pointer-events-none absolute inset-0 bg-noise opacity-20 mix-blend-soft-light" />
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,transparent_0,#0a0a0a_75%)]" />
 
+            {activeFactIndex === null && (
+                <div
+                    className="pointer-events-none absolute bottom-[18%] left-1/2 z-20 -translate-x-1/2 animate-[factCardIn_0.8s_ease-out]"
+                    aria-hidden
+                >
+                    <p className="text-[0.9rem] tracking-[0.15em] uppercase text-neutral-500/80">
+                        click the yellow stars to learn more
+                    </p>
+                </div>
+            )}
+
             <Constellation
                 onStarClick={(index) => {
                     const safeIndex = ((index ?? 0) % facts.length + facts.length) % facts.length;
