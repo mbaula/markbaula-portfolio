@@ -115,6 +115,72 @@ const roll = ([lo, hi]) => Math.floor(Math.random() * (hi - lo + 1)) + lo;
 const wait = (ms) => new Promise(r => setTimeout(r, ms));
 const NAV = { 0: { right: 1, down: 2 }, 1: { left: 0, down: 3 }, 2: { up: 0, right: 3 }, 3: { up: 1, left: 2 } };
 
+const INTRO_LINES = [
+    "Hey there! Welcome!",
+    "Thanks for checking out my portfolio.",
+    "I'm Mark, a developer who loves to build",
+    "Before you go exploring, I made a little something for you...",
+    "A battle simulator! Just for fun.",
+    "Pick a trainer, choose your partner, and let's see what you've got!",
+    "Oh, and watch out for BUGTWO... it's a tough one.",
+    "Good luck out there!",
+];
+
+const TRACKS = {
+    title:  '/audio/title.mp3',
+    select: '/audio/select.mp3',
+    battle: '/audio/battle.mp3',
+};
+
+function useGameAudio() {
+    const audios = useRef({});
+    const current = useRef(null);
+    const muted = useRef(true);
+    const [isMuted, setIsMuted] = useState(true);
+
+    const getAudio = useCallback((key) => {
+        if (!audios.current[key]) {
+            const a = new Audio(TRACKS[key]);
+            a.loop = true;
+            a.volume = 0.35;
+            a.preload = 'auto';
+            audios.current[key] = a;
+        }
+        return audios.current[key];
+    }, []);
+
+    const play = useCallback((key) => {
+        if (current.current === key) return;
+        Object.values(audios.current).forEach(a => { a.pause(); a.currentTime = 0; });
+        current.current = key;
+        if (muted.current || !TRACKS[key]) return;
+        const a = getAudio(key);
+        a.play().catch(() => {});
+    }, [getAudio]);
+
+    const stop = useCallback(() => {
+        Object.values(audios.current).forEach(a => { a.pause(); a.currentTime = 0; });
+        current.current = null;
+    }, []);
+
+    const toggle = useCallback(() => {
+        muted.current = !muted.current;
+        setIsMuted(muted.current);
+        if (muted.current) {
+            Object.values(audios.current).forEach(a => a.pause());
+        } else if (current.current) {
+            const a = getAudio(current.current);
+            a.play().catch(() => {});
+        }
+    }, [getAudio]);
+
+    useEffect(() => () => {
+        Object.values(audios.current).forEach(a => { a.pause(); a.src = ''; });
+    }, []);
+
+    return { play, stop, toggle, isMuted };
+}
+
 const screenFade = {
     initial: { opacity: 0 },
     animate: { opacity: 1 },
@@ -156,7 +222,15 @@ export function PokemonBattle() {
     const [trainerIdx, setTrainerIdx] = useState(0);
     const [pokemonIdx, setPokemonIdx] = useState(0);
     const [playerName, setPlayerName] = useState('');
+    const [introIdx, setIntroIdx] = useState(0);
     const nameRef = useRef(null);
+    const audio = useGameAudio();
+
+    useEffect(() => {
+        if (screen === 'title' || screen === 'intro') audio.play('title');
+        else if (screen === 'selectTrainer' || screen === 'enterName' || screen === 'selectPokemon') audio.play('select');
+        else if (screen === 'battle') audio.play('battle');
+    }, [screen, audio.play]);
     const [phase, setPhase] = useState('idle');
     const [playerHp, setPlayerHp] = useState(0);
     const [enemyHp, setEnemyHp] = useState(ENEMY.maxHp);
@@ -386,7 +460,15 @@ export function PokemonBattle() {
         function onKey(e) {
             const k = e.key;
             if (screen === 'title') {
-                if (k === 'z' || k === 'Enter') { setScreen('selectTrainer'); return; }
+                if (k === 'z' || k === 'Enter') { setScreen('intro'); setIntroIdx(0); return; }
+            }
+            if (screen === 'intro') {
+                if (k === 'z' || k === 'Enter') {
+                    if (introIdx < INTRO_LINES.length - 1) setIntroIdx(i => i + 1);
+                    else setScreen('selectTrainer');
+                    return;
+                }
+                if (k === 'x' || k === 'Escape') { setScreen('selectTrainer'); return; }
             }
             if (screen === 'selectTrainer') {
                 if (k === 'ArrowLeft') { e.preventDefault(); setTrainerIdx(i => (i - 1 + TRAINERS.length) % TRAINERS.length); return; }
@@ -431,16 +513,21 @@ export function PokemonBattle() {
     }, [screen, phase, sel]);
 
     const pressA = useCallback(() => {
-        if (screen === 'title') setScreen('selectTrainer');
+        if (screen === 'title') { setScreen('intro'); setIntroIdx(0); }
+        else if (screen === 'intro') {
+            if (introIdx < INTRO_LINES.length - 1) setIntroIdx(i => i + 1);
+            else setScreen('selectTrainer');
+        }
         else if (screen === 'selectTrainer') setScreen('enterName');
         else if (screen === 'enterName') setScreen('selectPokemon');
         else if (screen === 'selectPokemon') startBattle();
         else if (phase === 'choose') doAttack(sel);
         else if (phase === 'win' || phase === 'lose') restart();
-    }, [screen, phase, sel, startBattle, doAttack, restart]);
+    }, [screen, phase, sel, introIdx, startBattle, doAttack, restart]);
 
     const pressB = useCallback(() => {
-        if (screen === 'selectTrainer') setScreen('title');
+        if (screen === 'intro') setScreen('selectTrainer');
+        else if (screen === 'selectTrainer') setScreen('intro');
         else if (screen === 'enterName') setScreen('selectTrainer');
         else if (screen === 'selectPokemon') setScreen('enterName');
         else if (phase === 'win' || phase === 'lose') restart();
@@ -451,23 +538,49 @@ export function PokemonBattle() {
     const selEff = selMove ? getEff(selMove.type) : 1;
 
     return (
-        <div className={`${gameFont.className} flex min-h-screen flex-col items-center justify-center bg-[#050508] p-4`}>
-            <Link href="/" className="fixed left-3 top-3 z-50 font-sans text-sm text-white/80 no-underline transition-colors hover:text-white sm:left-5 sm:top-5 sm:text-base">
+        <div className={`${gameFont.className} flex h-[100dvh] flex-col items-center justify-center bg-[#050508] sm:min-h-screen sm:p-4`}>
+            <Link href="/" className="fixed left-3 top-3 z-50 hidden font-sans text-sm text-white/80 no-underline transition-colors hover:text-white sm:block sm:left-5 sm:top-5 sm:text-base">
                 ← back
             </Link>
 
-            <div className="flex w-full max-w-[480px] flex-col rounded-[30px] bg-gradient-to-b from-[#1e1e32] via-[#18182a] to-[#121220] p-5 shadow-[0_0_100px_-20px_rgba(90,70,180,0.12),0_20px_60px_-20px_rgba(0,0,0,0.6),inset_0_1px_0_0_rgba(255,255,255,0.04)] sm:max-w-[560px] sm:rounded-[36px] sm:p-7">
+            <div className="flex h-full w-full flex-col bg-gradient-to-b from-[#1e1e32] via-[#18182a] to-[#121220] p-3 sm:h-auto sm:max-w-[560px] sm:rounded-[36px] sm:p-7 sm:shadow-[0_0_100px_-20px_rgba(90,70,180,0.12),0_20px_60px_-20px_rgba(0,0,0,0.6),inset_0_1px_0_0_rgba(255,255,255,0.04)]">
 
-                <div className="mb-3 flex items-center justify-between px-1 sm:mb-4">
+                <div className="mb-2 flex items-center justify-between px-1 sm:mb-4">
                     <span className="text-[8px] font-bold tracking-[0.25em] text-indigo-400/50 sm:text-[10px]">DEV&nbsp;BOY</span>
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-3">
+                        <button onClick={audio.toggle} className="group cursor-pointer rounded border border-white/20 bg-white/5 px-2 py-1 transition-all hover:border-white/40 hover:bg-white/10" aria-label="Toggle music">
+                            <svg width="18" height="14" viewBox="0 0 18 14" fill="none" className="sm:h-[16px] sm:w-[20px]" style={{ imageRendering: 'pixelated' }}>
+                                <rect x="0" y="4" width="2" height="6" fill="currentColor" className="text-white/60 group-hover:text-white/90" />
+                                <rect x="2" y="3" width="2" height="8" fill="currentColor" className="text-white/60 group-hover:text-white/90" />
+                                <rect x="4" y="1" width="2" height="12" fill="currentColor" className="text-white/60 group-hover:text-white/90" />
+                                <rect x="6" y="0" width="2" height="14" fill="currentColor" className="text-white/60 group-hover:text-white/90" />
+                                {audio.isMuted ? (
+                                    <>
+                                        <rect x="10" y="4" width="2" height="2" fill="#ef4444" />
+                                        <rect x="14" y="4" width="2" height="2" fill="#ef4444" />
+                                        <rect x="12" y="6" width="2" height="2" fill="#ef4444" />
+                                        <rect x="10" y="8" width="2" height="2" fill="#ef4444" />
+                                        <rect x="14" y="8" width="2" height="2" fill="#ef4444" />
+                                    </>
+                                ) : (
+                                    <>
+                                        <rect x="10" y="5" width="2" height="4" fill="#818cf8" />
+                                        <rect x="13" y="3" width="2" height="8" fill="#818cf8" />
+                                        <rect x="16" y="1" width="2" height="12" fill="#818cf8" />
+                                    </>
+                                )}
+                            </svg>
+                        </button>
+                        <Link href="/" className="font-sans text-[10px] text-white/50 no-underline transition-colors hover:text-white/80 sm:hidden">
+                            ✕ EXIT
+                        </Link>
                         <div className={`h-2 w-2 rounded-full transition-colors duration-500 ${screen === 'battle' ? 'bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.6)]' : 'bg-red-800/60'}`} />
                     </div>
                 </div>
 
-                <div className="overflow-hidden rounded-xl bg-[#080810] p-2 shadow-[inset_0_3px_12px_rgba(0,0,0,0.7)] sm:rounded-2xl sm:p-3">
+                <div className="flex-1 overflow-hidden rounded-xl bg-[#080810] p-1.5 shadow-[inset_0_3px_12px_rgba(0,0,0,0.7)] sm:flex-none sm:rounded-2xl sm:p-3">
                     <motion.div
-                        className="relative aspect-[3/2] w-full overflow-hidden rounded-md"
+                        className="relative aspect-auto h-full w-full overflow-hidden rounded-md sm:aspect-[3/2] sm:h-auto"
                         animate={shaking ? { x: [-4, 4, -3, 3, -1, 0] } : { x: 0 }}
                         transition={{ duration: 0.3, ease: 'easeOut' }}
                     >
@@ -491,6 +604,50 @@ export function PokemonBattle() {
                                         </div>
 
                                         <p className="relative z-10 animate-[blinkSlow_1.2s_steps(2,start)_infinite] text-[7px] tracking-wider text-neutral-400 sm:text-[8px]">PRESS START</p>
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {screen === 'intro' && (
+                                <motion.div key="intro" className="h-full" {...screenFade}>
+                                    <div className="flex h-full flex-col items-center justify-between bg-[#0c0c18] px-4 py-4 sm:px-6 sm:py-6" onClick={pressA}>
+                                        <div className="flex flex-1 flex-col items-center justify-center gap-3">
+                                            <motion.div
+                                                initial={{ y: 10, opacity: 0 }}
+                                                animate={{ y: 0, opacity: 1 }}
+                                                transition={{ duration: 0.4 }}
+                                            >
+                                                <img
+                                                    src={`${SHOWDOWN}/trainers/ash-sinnoh.png`}
+                                                    alt="Mark"
+                                                    className="h-24 w-auto sm:h-32"
+                                                    style={{ imageRendering: 'pixelated' }}
+                                                    draggable={false}
+                                                />
+                                            </motion.div>
+                                            <AnimatePresence mode="wait">
+                                                <motion.p
+                                                    key={introIdx}
+                                                    initial={{ opacity: 0, y: 6 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    exit={{ opacity: 0, y: -6 }}
+                                                    transition={{ duration: 0.2 }}
+                                                    className="max-w-[260px] text-center text-[7px] leading-relaxed text-neutral-300 sm:max-w-[320px] sm:text-[9px]"
+                                                >
+                                                    {INTRO_LINES[introIdx]}
+                                                </motion.p>
+                                            </AnimatePresence>
+                                        </div>
+                                        <div className="flex flex-col items-center gap-1">
+                                            <div className="flex gap-1">
+                                                {INTRO_LINES.map((_, i) => (
+                                                    <div key={i} className={`h-1 w-1 rounded-full transition-colors sm:h-1.5 sm:w-1.5 ${i === introIdx ? 'bg-indigo-400' : i < introIdx ? 'bg-indigo-400/30' : 'bg-neutral-700'}`} />
+                                                ))}
+                                            </div>
+                                            <p className="animate-[blinkSlow_1.2s_steps(2,start)_infinite] text-[5px] text-neutral-500 sm:text-[6px]">
+                                                {introIdx < INTRO_LINES.length - 1 ? 'A:NEXT' : 'A:CONTINUE'} &nbsp; B:SKIP
+                                            </p>
+                                        </div>
                                     </div>
                                 </motion.div>
                             )}
@@ -711,8 +868,8 @@ export function PokemonBattle() {
                     </motion.div>
                 </div>
 
-                <div className="mt-7 flex items-start justify-between px-2 sm:mt-8 sm:px-5">
-                    <div className="relative h-[84px] w-[84px] select-none sm:h-[100px] sm:w-[100px]">
+                <div className="mt-3 flex items-start justify-between px-1 sm:mt-8 sm:px-5">
+                    <div className="relative h-[100px] w-[100px] select-none sm:h-[100px] sm:w-[100px]">
                         <div className="absolute left-1/2 top-0 h-full w-[32%] -translate-x-1/2 rounded-[4px] bg-[#28283e] shadow-[inset_0_-2px_6px_rgba(0,0,0,0.5),0_1px_0_rgba(255,255,255,0.04)]" />
                         <div className="absolute left-0 top-1/2 h-[32%] w-full -translate-y-1/2 rounded-[4px] bg-[#28283e] shadow-[inset_0_-2px_6px_rgba(0,0,0,0.5),0_1px_0_rgba(255,255,255,0.04)]" />
                         <div className="absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#1c1c2c]" />
@@ -737,38 +894,70 @@ export function PokemonBattle() {
                         </div>
                     </div>
 
-                    <div className="relative h-[84px] w-[84px] select-none sm:h-[100px] sm:w-[100px]">
+                    <div className="relative h-[100px] w-[100px] select-none sm:h-[100px] sm:w-[100px]">
                         <button
                             type="button"
                             onClick={pressB}
-                            className="absolute bottom-1 left-0 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-[#7B3052] shadow-[inset_0_-3px_6px_rgba(0,0,0,0.4),0_2px_6px_rgba(0,0,0,0.4)] transition-all active:translate-y-[1px] active:shadow-[inset_0_2px_6px_rgba(0,0,0,0.6)] sm:h-12 sm:w-12"
+                            className="absolute bottom-1 left-0 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-[#7B3052] shadow-[inset_0_-3px_6px_rgba(0,0,0,0.4),0_2px_6px_rgba(0,0,0,0.4)] transition-all active:translate-y-[1px] active:shadow-[inset_0_2px_6px_rgba(0,0,0,0.6)]"
                             aria-label="B button"
                         >
-                            <span className="text-[8px] font-bold text-white/60 sm:text-[9px]">B</span>
+                            <span className="text-[9px] font-bold text-white/60">B</span>
                         </button>
                         <button
                             type="button"
                             onClick={pressA}
-                            className="absolute right-0 top-1 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-[#7B3052] shadow-[inset_0_-3px_6px_rgba(0,0,0,0.4),0_2px_6px_rgba(0,0,0,0.4)] transition-all active:translate-y-[1px] active:shadow-[inset_0_2px_6px_rgba(0,0,0,0.6)] sm:h-12 sm:w-12"
+                            className="absolute right-0 top-1 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-[#7B3052] shadow-[inset_0_-3px_6px_rgba(0,0,0,0.4),0_2px_6px_rgba(0,0,0,0.4)] transition-all active:translate-y-[1px] active:shadow-[inset_0_2px_6px_rgba(0,0,0,0.6)]"
                             aria-label="A button"
                         >
-                            <span className="text-[8px] font-bold text-white/60 sm:text-[9px]">A</span>
+                            <span className="text-[9px] font-bold text-white/60">A</span>
                         </button>
-                        <span className="absolute bottom-0 left-4 text-[4px] text-neutral-600 sm:text-[5px]">B</span>
-                        <span className="absolute right-4 top-0 text-[4px] text-neutral-600 sm:text-[5px]">A</span>
+                        <span className="absolute bottom-0 left-5 text-[5px] text-neutral-600">B</span>
+                        <span className="absolute right-5 top-0 text-[5px] text-neutral-600">A</span>
                     </div>
                 </div>
 
-                <div className="mt-5 flex items-end justify-end gap-[3px] px-4 sm:mt-6">
+                <div className="mt-3 flex items-end justify-end gap-[3px] px-4 sm:mt-6">
                     {Array.from({ length: 8 }).map((_, i) => (
                         <div key={i} className="w-[2px] rounded-full bg-neutral-700/30" style={{ height: `${10 + Math.sin(i * 0.7) * 5}px`, transform: 'rotate(-30deg)' }} />
                     ))}
                 </div>
             </div>
 
-            <p className="mt-4 text-center font-sans text-xs leading-relaxed text-white/70 sm:text-sm">
+            <p className="mt-4 hidden text-center font-sans text-xs leading-relaxed text-white/70 sm:block sm:text-sm">
                 Arrows = D-Pad &nbsp;·&nbsp; Z/Enter = A &nbsp;·&nbsp; X/Esc = B
             </p>
+
+            <div className="mt-4 w-full max-w-none px-3 pb-4 text-center font-sans text-[6px] leading-relaxed text-white/30 sm:mt-6 sm:px-4 sm:pb-0 sm:text-[10px]">
+                <div className="flex flex-wrap justify-center gap-x-3 gap-y-1.5">
+                    <span>
+                        Pokémon and all related characters, names, and imagery are trademarks &amp; © of Nintendo, Game Freak, and The Pokémon Company. This is a non-commercial fan project made for fun.
+                    </span>
+                    <span>
+                        Sprites from{' '}
+                        <a
+                            href="https://play.pokemonshowdown.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline transition-colors hover:text-white/50"
+                        >
+                            Pokémon Showdown
+                        </a>{' '}
+                        (gen5ani, trainers) and{' '}
+                        <a
+                            href="https://pokeapi.co"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline transition-colors hover:text-white/50"
+                        >
+                            PokéAPI
+                        </a>{' '}
+                        (items, fallback sprites). Game Boy design inspired by the Nintendo Game Boy Advance.
+                    </span>
+                    <span>
+                        No copyright infringement intended.
+                    </span>
+                </div>
+            </div>
         </div>
     );
 }
