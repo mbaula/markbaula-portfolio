@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Github, Linkedin, Mail, FileText } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 const socials = [
     { href: 'https://github.com/mbaula', icon: Github, label: 'GitHub' },
@@ -38,15 +39,10 @@ export function PortfolioAbout() {
             id="about"
             className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-gradient-to-b from-[#0a0a0a] via-[#0d0d0d] to-[#0a0a0a] py-20"
         >
-            {/* Animated grain — neutral, distinct from Experience (different drift) */}
-            <div
-                className="about-bg-noise pointer-events-none absolute inset-0 z-0 opacity-[0.18]"
-                aria-hidden
-            />
-            <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_20%,rgba(255,200,100,0.04),transparent)]" />
-            <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-0 h-px bg-gradient-to-r from-transparent via-neutral-700/40 to-transparent" />
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_20%,rgba(255,200,100,0.04),transparent)]" />
+            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-neutral-700/40 to-transparent" />
 
-            <div className="relative z-10 mx-6 flex w-[min(1120px,100%)] flex-col items-center gap-12 sm:flex-row sm:items-center sm:gap-16">
+            <div className="relative mx-6 flex w-[min(1120px,100%)] flex-col items-center gap-12 sm:flex-row sm:items-center sm:gap-16">
                 <div
                     className={`group relative shrink-0 transition-all duration-700 ease-out ${visible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}
                 >
@@ -113,6 +109,23 @@ export function PortfolioAbout() {
                                 </a>
                             ))}
                         </div>
+
+                        <Link
+                            href="/virtual"
+                            className="group/gb mt-4 flex items-center gap-2 rounded-lg border border-neutral-700/40 bg-neutral-800/30 px-3 py-2 no-underline transition-colors hover:border-neutral-600/60 hover:bg-neutral-800/50 sm:hidden"
+                        >
+                            <svg width="20" height="28" viewBox="0 0 28 40" fill="none" className="shrink-0 opacity-60" style={{ imageRendering: 'pixelated' }}>
+                                <rect x="2" y="1" width="24" height="38" rx="3" fill="#1e1e32" stroke="#3b3b5c" strokeWidth="1" />
+                                <rect x="5" y="4" width="18" height="12" rx="1" fill="#0c0c18" />
+                                <rect x="7" y="6" width="14" height="8" rx="0.5" fill="#2a4a2a" />
+                                <rect x="17" y="20" width="3" height="3" rx="1.5" fill="#7B3052" />
+                                <rect x="21" y="19" width="3" height="3" rx="1.5" fill="#7B3052" />
+                                <circle cx="3" cy="4" r="1" fill="#48D0B0" />
+                            </svg>
+                            <span className="text-[0.7rem] text-neutral-500 transition-colors group-hover/gb:text-neutral-400">
+                                Play mini-game
+                            </span>
+                        </Link>
                     </div>
                 </div>
             </div>
