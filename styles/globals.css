@@ -360,43 +360,7 @@
         animation: floatingAccent 20s ease-in-out infinite;
     }
 
-    /* ── Pokemon Battle animations ─────────────────────────────────── */
-
-    @keyframes battleShake {
-        0%, 100% { transform: translateX(0); }
-        12% { transform: translateX(-5px) rotate(-0.5deg); }
-        24% { transform: translateX(5px) rotate(0.5deg); }
-        36% { transform: translateX(-3px); }
-        48% { transform: translateX(3px); }
-        60% { transform: translateX(-1px); }
-    }
-
-    .battle-shake {
-        animation: battleShake 0.3s ease-out;
-    }
-
-    @keyframes battleHit {
-        0%   { filter: brightness(1); opacity: 1; }
-        12%  { filter: brightness(3); opacity: 0.3; }
-        24%  { filter: brightness(1); opacity: 1; }
-        36%  { filter: brightness(2.5); opacity: 0.4; }
-        48%  { filter: brightness(1); opacity: 1; }
-        60%  { filter: brightness(2); opacity: 0.5; }
-        100% { filter: brightness(1); opacity: 1; }
-    }
-
-    .battle-hit {
-        animation: battleHit 0.5s ease-out;
-    }
-
-    @keyframes battleFaint {
-        0%   { transform: translateY(0); opacity: 1; }
-        100% { transform: translateY(50px); opacity: 0; }
-    }
-
-    .battle-faint {
-        animation: battleFaint 0.9s ease-in forwards;
-    }
+    /* ── Pokemon Battle animations (shake/hit/faint now via framer-motion) ── */
 
     /* GBA title screen animations */
     @keyframes titleSlideDown {
@@ -436,12 +400,6 @@
     /* Slow blink for "PRESS START" */
     @keyframes blinkSlow {
         50% { opacity: 0; }
-    }
-
-    /* Flash pulse on damage/emergence */
-    @keyframes flashPulse {
-        0%   { opacity: 0.95; }
-        100% { opacity: 0; }
     }
 
     /* Enemy slides in from the right */
