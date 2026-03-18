@@ -12,7 +12,7 @@ export function PortfolioNavbar() {
         { href: '#about', label: 'About' },
         { href: '#experience', label: 'Experience' },
         { href: '#projects', label: 'Projects' },
-        { href: '/virtual', label: 'Click' }
+        { href: '/virtual', label: 'Click Me!' }
     ];
 
     return (
@@ -32,7 +32,7 @@ export function PortfolioNavbar() {
                             {item.label}
                         </Link>
                     ))}
-                    <PortfolioAudioToggle />
+                    {/* <PortfolioAudioToggle /> */}
                 </div>
 
                 <div className="flex items-center gap-3 sm:hidden">
