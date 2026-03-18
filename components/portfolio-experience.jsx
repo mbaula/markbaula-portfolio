@@ -8,12 +8,21 @@ const CIBC_LOGO = 'https://logos-world.net/wp-content/uploads/2021/05/CIBC-Emble
 const BORDERLESS_LOGO = 'https://media.licdn.com/dms/image/v2/D560BAQFbn0v2utGhCw/company-logo_200_200/company-logo_200_200/0/1733953620866/hireborderless_logo?e=1775088000&v=beta&t=IVrXyRt2BloSQt6alnIY8VHEGo9lQk9eymLLZM2uUuM';
 const UW_LOGO = 'https://upload.wikimedia.org/wikipedia/en/6/6e/University_of_Waterloo_seal.svg';
 
+const ARXIV_LINK = 'https://arxiv.org/abs/2305.14177';
+const ARXIV_TITLE = 'ChemGymRL: An Interactive Framework for Reinforcement Learning for Digital Chemistry';
+
 const experience = [
     { period: 'May 2025 — Aug 2025', title: 'Software Developer', company: 'CIBC', logo: CIBC_LOGO },
     { period: 'May 2024 — Dec 2024', title: 'Software Developer', company: 'CIBC', logo: CIBC_LOGO },
     { period: 'Sep 2022 — Dec 2022', title: 'Full Stack Developer', company: 'Borderless', logo: BORDERLESS_LOGO },
     { period: 'Sep 2021 — Apr 2022', title: 'Data Analyst', company: 'CIBC', logo: CIBC_LOGO },
-    { period: 'Jan 2021 — Apr 2021', title: 'Software Developer', company: 'University of Waterloo / NRC', logo: UW_LOGO }
+    {
+        period: 'Jan 2021 — Apr 2021',
+        title: 'Software Developer',
+        company: 'University of Waterloo / NRC',
+        logo: UW_LOGO,
+        publication: { url: ARXIV_LINK, title: ARXIV_TITLE }
+    }
 ];
 
 const STAGGER_DELAY_MS = 80;
@@ -82,6 +91,24 @@ export function PortfolioExperience() {
                                             <span className="text-sm text-neutral-400">{job.title}</span>
                                         </div>
                                         <p className="mt-0.5 text-xs text-neutral-500">{job.period}</p>
+                                        {job.publication && (
+                                            <div className="mt-1 flex flex-wrap items-center gap-2">
+                                                <a
+                                                    href={job.publication.url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center gap-2 text-[0.65rem] text-neutral-500 underline decoration-neutral-600 underline-offset-2 transition-colors hover:text-amber-400/90 hover:decoration-amber-500/40"
+                                                    aria-label={`Open publication: ${job.publication.title}`}
+                                                >
+                                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ imageRendering: 'pixelated' }}>
+                                                        <rect x="1" y="1" width="12" height="12" rx="2" fill="rgba(245,158,11,0.15)" stroke="rgba(245,158,11,0.7)" />
+                                                        <path d="M5.2 8.9L6.2 5.4H7.2L8.2 8.9H7.2L6.9 7.9H6.5L6.2 8.9H5.2Z" fill="rgba(245,158,11,0.9)" />
+                                                        <path d="M4.3 6.2C4.6 5.1 5.4 4.5 6.6 4.5C7.3 4.5 8 4.7 8.6 5.1L8.1 5.8C7.6 5.5 7.1 5.4 6.6 5.4C5.8 5.4 5.3 5.8 5.1 6.2L4.3 6.2Z" fill="rgba(245,158,11,0.65)" />
+                                                    </svg>
+                                                    <span className="whitespace-nowrap">arXiv · {job.publication.title}</span>
+                                                </a>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
