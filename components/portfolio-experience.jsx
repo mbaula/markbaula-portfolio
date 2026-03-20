@@ -97,7 +97,7 @@ export function PortfolioExperience() {
                                                     href={job.publication.url}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="inline-flex items-center gap-2 text-[0.65rem] text-neutral-500 underline decoration-neutral-600 underline-offset-2 transition-colors hover:text-amber-400/90 hover:decoration-amber-500/40"
+                                                    className="inline-flex flex-wrap items-start gap-2 text-[0.65rem] text-neutral-500 underline decoration-neutral-600 underline-offset-2 transition-colors hover:text-amber-400/90 hover:decoration-amber-500/40"
                                                     aria-label={`Open publication: ${job.publication.title}`}
                                                 >
                                                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ imageRendering: 'pixelated' }}>
@@ -105,7 +105,9 @@ export function PortfolioExperience() {
                                                         <path d="M5.2 8.9L6.2 5.4H7.2L8.2 8.9H7.2L6.9 7.9H6.5L6.2 8.9H5.2Z" fill="rgba(245,158,11,0.9)" />
                                                         <path d="M4.3 6.2C4.6 5.1 5.4 4.5 6.6 4.5C7.3 4.5 8 4.7 8.6 5.1L8.1 5.8C7.6 5.5 7.1 5.4 6.6 5.4C5.8 5.4 5.3 5.8 5.1 6.2L4.3 6.2Z" fill="rgba(245,158,11,0.65)" />
                                                     </svg>
-                                                    <span className="whitespace-nowrap">arXiv · {job.publication.title}</span>
+                                                    <span className="max-w-[240px] whitespace-normal wrap-break-word leading-snug sm:max-w-none">
+                                                        arXiv · {job.publication.title}
+                                                    </span>
                                                 </a>
                                             </div>
                                         )}

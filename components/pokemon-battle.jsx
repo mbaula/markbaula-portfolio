@@ -767,7 +767,7 @@ export function PokemonBattle() {
 
                                     {showEnemy && (
                                         <motion.div
-                                            className={`absolute right-[10%] top-[6%] z-10 ${enemyEnter ? 'animate-[enemySlideIn_0.7s_ease-out]' : ''}`}
+                                            className={`absolute right-[10%] top-[12%] sm:top-[6%] z-10 ${enemyEnter ? 'animate-[enemySlideIn_0.7s_ease-out]' : ''}`}
                                             animate={{
                                                 opacity: faintE ? 0 : hitE ? [1, 0.15, 1, 0.15, 1] : 1,
                                                 y: faintE ? 30 : 0,

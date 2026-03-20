@@ -64,7 +64,6 @@ export function PortfolioNavbar() {
                 </div>
 
                 <div className="flex items-center gap-3 sm:hidden">
-                    <PortfolioAudioToggle />
                     <button
                         type="button"
                         onClick={() => setOpen((v) => !v)}
