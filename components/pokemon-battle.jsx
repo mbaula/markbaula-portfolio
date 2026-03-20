@@ -252,6 +252,7 @@ export function PokemonBattle() {
     const [trainerExit, setTrainerExit] = useState(false);
     const [enemyEnter, setEnemyEnter] = useState(false);
     const [playerEmerge, setPlayerEmerge] = useState(false);
+    const [showDisclaimer, setShowDisclaimer] = useState(false);
 
     const chosen = POKEMON[pokemonIdx];
     const trainer = TRAINERS[trainerIdx];
@@ -916,10 +917,25 @@ export function PokemonBattle() {
                     </div>
                 </div>
 
-                <div className="mt-3 flex items-end justify-end gap-[3px] px-4 sm:mt-6">
-                    {Array.from({ length: 8 }).map((_, i) => (
-                        <div key={i} className="w-[2px] rounded-full bg-neutral-700/30" style={{ height: `${10 + Math.sin(i * 0.7) * 5}px`, transform: 'rotate(-30deg)' }} />
-                    ))}
+                <div className="mt-3 flex items-end justify-between px-4 sm:mt-6 sm:justify-end">
+                    {}
+                    <button
+                        type="button"
+                        onClick={() => setShowDisclaimer(true)}
+                        className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full text-neutral-600 transition-colors hover:text-neutral-400 sm:hidden"
+                        aria-label="Credits and disclaimer"
+                    >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M12 16v-4" />
+                            <path d="M12 8h.01" />
+                        </svg>
+                    </button>
+                    <div className="flex items-end gap-[3px]">
+                        {Array.from({ length: 8 }).map((_, i) => (
+                            <div key={i} className="w-[2px] rounded-full bg-neutral-700/30" style={{ height: `${10 + Math.sin(i * 0.7) * 5}px`, transform: 'rotate(-30deg)' }} />
+                        ))}
+                    </div>
                 </div>
             </div>
 
@@ -927,7 +943,8 @@ export function PokemonBattle() {
                 Arrows = D-Pad &nbsp;·&nbsp; Z/Enter = A &nbsp;·&nbsp; X/Esc = B
             </p>
 
-            <div className="mt-4 w-full max-w-none px-3 pb-4 text-center font-sans text-[6px] leading-relaxed text-white/30 sm:mt-6 sm:px-4 sm:pb-0 sm:text-[10px]">
+            {}
+            <div className="mt-6 hidden w-full max-w-none px-4 text-center font-sans text-[10px] leading-relaxed text-white/30 sm:block">
                 <div className="flex flex-wrap justify-center gap-x-3 gap-y-1.5">
                     <span>
                         Pokémon and all related characters, names, and imagery are trademarks &amp; © of Nintendo, Game Freak, and The Pokémon Company. This is a non-commercial fan project made for fun.
@@ -958,6 +975,72 @@ export function PokemonBattle() {
                     </span>
                 </div>
             </div>
+
+            {}
+            <AnimatePresence>
+                {showDisclaimer && (
+                    <motion.div
+                        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm sm:hidden"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setShowDisclaimer(false)}
+                    >
+                        <motion.div
+                            className="relative max-h-[80vh] w-full max-w-sm overflow-y-auto rounded-2xl border border-white/10 bg-[#1a1a2e] p-5 shadow-2xl"
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <button
+                                type="button"
+                                onClick={() => setShowDisclaimer(false)}
+                                className="absolute right-3 top-3 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-white/20 bg-white/5 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+                                aria-label="Close"
+                            >
+                                ✕
+                            </button>
+
+                            <h3 className="mb-4 font-sans text-sm font-medium text-white/90">Credits &amp; Disclaimer</h3>
+
+                            <div className="space-y-3 font-sans text-xs leading-relaxed text-white/60">
+                                <p>
+                                    Pokémon and all related characters, names, and imagery are trademarks &amp; © of Nintendo, Game Freak, and The Pokémon Company. This is a non-commercial fan project made for fun.
+                                </p>
+                                <p>
+                                    Sprites from{' '}
+                                    <a
+                                        href="https://play.pokemonshowdown.com"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-indigo-400 underline transition-colors hover:text-indigo-300"
+                                    >
+                                        Pokémon Showdown
+                                    </a>{' '}
+                                    (gen5ani, trainers) and{' '}
+                                    <a
+                                        href="https://pokeapi.co"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-indigo-400 underline transition-colors hover:text-indigo-300"
+                                    >
+                                        PokéAPI
+                                    </a>{' '}
+                                    (items, fallback sprites).
+                                </p>
+                                <p>
+                                    Game Boy design inspired by the Nintendo Game Boy Advance.
+                                </p>
+                                <p className="pt-2 text-white/40">
+                                    No copyright infringement intended.
+                                </p>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
