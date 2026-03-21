@@ -271,22 +271,6 @@
         opacity: 0;
     }
 
-    @keyframes experienceNoise {
-        0% {
-            background-position: 0 0;
-        }
-        100% {
-            background-position: 128px 96px;
-        }
-    }
-
-    .experience-bg-noise {
-        background-image: url('/images/noise.svg');
-        background-repeat: repeat;
-        background-size: 128px 96px;
-        animation: experienceNoise 25s linear infinite;
-    }
-
     @keyframes aboutNoise {
         0% {
             background-position: 0 0;

@@ -3,32 +3,78 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import { FastForward, X, Sparkles } from 'lucide-react';
 
 const CLICKABLE_ANCHORS = [
-    { xPct: 0.15, yPct: 0.25 },
-    { xPct: 0.85, yPct: 0.28 },
-    { xPct: 0.14, yPct: 0.72 },
-    { xPct: 0.83, yPct: 0.75 }
+    { xPct: 0.15, yPct: 0.25, size: 117 },
+    { xPct: 0.85, yPct: 0.28, size: 170 },
+    { xPct: 0.14, yPct: 0.72, size: 143 },
+    { xPct: 0.83, yPct: 0.75, size: 117 }
 ];
+
+const STAR_IMAGES = [
+    '/stars/star-1.svg',
+    '/stars/star-2.svg',
+    '/stars/star-7.svg',
+    '/stars/star-1.svg'
+];
+
+function ClickableStar({ anchor, index, onClick, time }) {
+    const orbitSpeed = 0.4 + index * 0.15;
+    const orbitRadius = 12 + index * 4;
+    const offsetX = Math.cos(time * orbitSpeed) * orbitRadius;
+    const offsetY = Math.sin(time * orbitSpeed) * orbitRadius;
+    const displaySize = Math.min(anchor.size * 0.6, 80);
+
+    return (
+        <button
+            type="button"
+            onClick={() => onClick(index)}
+            className="absolute cursor-pointer transition-transform duration-200 hover:scale-110 focus:outline-none"
+            style={{
+                left: `calc(${anchor.xPct * 100}% + ${offsetX}px)`,
+                top: `calc(${anchor.yPct * 100}% + ${offsetY}px)`,
+                transform: 'translate(-50%, -50%)',
+                width: displaySize,
+                height: displaySize
+            }}
+            aria-label={`Star ${index + 1} - click to learn more`}
+        >
+            {/* Native <img> keeps SVG + embedded art sharp; next/image rasterizes SVGs and looks soft */}
+            <img
+                src={STAR_IMAGES[index]}
+                alt=""
+                width={displaySize}
+                height={displaySize}
+                draggable={false}
+                fetchPriority={index === 0 ? 'high' : 'auto'}
+                className="pointer-events-none h-full w-full object-contain select-none"
+                style={{
+                    // Crisp compositing when the parent scales on hover
+                    backfaceVisibility: 'hidden',
+                    WebkitBackfaceVisibility: 'hidden'
+                }}
+            />
+        </button>
+    );
+}
 
 function Constellation({ onStarClick }) {
     const canvasRef = useRef(null);
     const mouseRef = useRef({ x: null, y: null });
     const lastMouseRef = useRef({ x: null, y: null });
     const starsRef = useRef([]);
+    const clickableStarsRef = useRef([]);
+    const [time, setTime] = useState(0);
 
     const initStars = useCallback((width, height) => {
         const stars = [];
+        const clickableStars = [];
         const starCount = 180;
 
         CLICKABLE_ANCHORS.forEach((anchor, idx) => {
-            stars.push({
+            clickableStars.push({
                 anchorX: anchor.xPct * width,
                 anchorY: anchor.yPct * height,
                 x: anchor.xPct * width,
                 y: anchor.yPct * height,
-                vx: 0,
-                vy: 0,
-                radius: 2.4,
-                clickable: true,
                 factIndex: idx,
                 orbitSpeed: 0.4 + idx * 0.15,
                 orbitRadius: 12 + idx * 4
@@ -41,13 +87,22 @@ function Constellation({ onStarClick }) {
                 y: Math.random() * height,
                 vx: (Math.random() - 0.5) * 0.25,
                 vy: (Math.random() - 0.5) * 0.25,
-                radius: Math.random() * 1.8 + 0.6,
-                clickable: false,
-                factIndex: -1
+                radius: Math.random() * 1.8 + 0.6
             });
         }
 
         starsRef.current = stars;
+        clickableStarsRef.current = clickableStars;
+    }, []);
+
+    useEffect(() => {
+        let animationId;
+        const animate = () => {
+            setTime(performance.now() * 0.001);
+            animationId = requestAnimationFrame(animate);
+        };
+        animate();
+        return () => cancelAnimationFrame(animationId);
     }, []);
 
     useEffect(() => {
@@ -70,6 +125,7 @@ function Constellation({ onStarClick }) {
 
         const draw = () => {
             const stars = starsRef.current;
+            const clickableStars = clickableStarsRef.current;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             const mouse = mouseRef.current;
@@ -89,42 +145,22 @@ function Constellation({ onStarClick }) {
                 lastMouseRef.current = { ...mouse };
             }
 
+            clickableStars.forEach((star) => {
+                star.x = star.anchorX + Math.cos(t * star.orbitSpeed) * star.orbitRadius;
+                star.y = star.anchorY + Math.sin(t * star.orbitSpeed) * star.orbitRadius;
+            });
+
             for (let i = 0; i < stars.length; i++) {
                 const star = stars[i];
 
-                if (star.clickable) {
-                    star.x = star.anchorX + Math.cos(t * star.orbitSpeed) * star.orbitRadius;
-                    star.y = star.anchorY + Math.sin(t * star.orbitSpeed) * star.orbitRadius;
-                } else {
-                    star.x += star.vx;
-                    star.y += star.vy;
-                    if (star.x < 0 || star.x > canvas.width) star.vx *= -1;
-                    if (star.y < 0 || star.y > canvas.height) star.vy *= -1;
-                }
+                star.x += star.vx;
+                star.y += star.vy;
+                if (star.x < 0 || star.x > canvas.width) star.vx *= -1;
+                if (star.y < 0 || star.y > canvas.height) star.vy *= -1;
 
-                if (star.clickable) {
-                    const pulse = 0.35 + 0.15 * Math.sin(t + i * 0.5);
-                    const glowRadius = star.radius * 8 + 18;
-                    const gradient = ctx.createRadialGradient(
-                        star.x, star.y, 0,
-                        star.x, star.y, glowRadius
-                    );
-                    gradient.addColorStop(0, `rgba(255, 200, 100, ${pulse})`);
-                    gradient.addColorStop(0.35, 'rgba(255, 180, 80, 0.12)');
-                    gradient.addColorStop(0.7, 'rgba(255, 160, 60, 0.02)');
-                    gradient.addColorStop(1, 'rgba(255, 140, 40, 0)');
-                    ctx.beginPath();
-                    ctx.arc(star.x, star.y, glowRadius, 0, Math.PI * 2);
-                    ctx.fillStyle = gradient;
-                    ctx.fill();
-                }
-
-                const coreRadius = star.clickable ? star.radius * 1.8 : star.radius;
                 ctx.beginPath();
-                ctx.arc(star.x, star.y, coreRadius, 0, Math.PI * 2);
-                ctx.fillStyle = star.clickable
-                    ? 'rgba(255, 210, 120, 0.98)'
-                    : 'rgba(255, 255, 255, 0.7)';
+                ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
                 ctx.fill();
 
                 for (let j = i + 1; j < stars.length; j++) {
@@ -143,6 +179,21 @@ function Constellation({ onStarClick }) {
                     }
                 }
 
+                clickableStars.forEach((clickable) => {
+                    const dx = star.x - clickable.x;
+                    const dy = star.y - clickable.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < connectionDistance) {
+                        ctx.beginPath();
+                        ctx.moveTo(star.x, star.y);
+                        ctx.lineTo(clickable.x, clickable.y);
+                        ctx.strokeStyle = `rgba(255, 200, 120, ${0.25 * (1 - dist / connectionDistance)})`;
+                        ctx.lineWidth = 0.6;
+                        ctx.stroke();
+                    }
+                });
+
                 if (useMouse) {
                     const dx = star.x - mouse.x;
                     const dy = star.y - mouse.y;
@@ -152,13 +203,28 @@ function Constellation({ onStarClick }) {
                         ctx.beginPath();
                         ctx.moveTo(star.x, star.y);
                         ctx.lineTo(mouse.x, mouse.y);
-                        ctx.strokeStyle = star.clickable
-                            ? `rgba(255, 200, 120, ${0.25 * (1 - dist / mouseRadius)})`
-                            : `rgba(255, 255, 255, ${0.35 * (1 - dist / mouseRadius)})`;
+                        ctx.strokeStyle = `rgba(255, 255, 255, ${0.35 * (1 - dist / mouseRadius)})`;
                         ctx.lineWidth = 0.9;
                         ctx.stroke();
                     }
                 }
+            }
+
+            if (useMouse) {
+                clickableStars.forEach((clickable) => {
+                    const dx = clickable.x - mouse.x;
+                    const dy = clickable.y - mouse.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < mouseRadius) {
+                        ctx.beginPath();
+                        ctx.moveTo(clickable.x, clickable.y);
+                        ctx.lineTo(mouse.x, mouse.y);
+                        ctx.strokeStyle = `rgba(255, 200, 120, ${0.3 * (1 - dist / mouseRadius)})`;
+                        ctx.lineWidth = 0.9;
+                        ctx.stroke();
+                    }
+                });
             }
 
             animationId = requestAnimationFrame(draw);
@@ -170,13 +236,13 @@ function Constellation({ onStarClick }) {
         const handleResize = () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            const stars = starsRef.current;
-            if (stars.length === 0) {
+            const clickableStars = clickableStarsRef.current;
+            if (starsRef.current.length === 0) {
                 initStars(canvas.width, canvas.height);
             } else {
                 CLICKABLE_ANCHORS.forEach((anchor, idx) => {
-                    const star = stars[idx];
-                    if (star && star.clickable) {
+                    const star = clickableStars[idx];
+                    if (star) {
                         star.anchorX = anchor.xPct * canvas.width;
                         star.anchorY = anchor.yPct * canvas.height;
                     }
@@ -186,74 +252,20 @@ function Constellation({ onStarClick }) {
 
         window.addEventListener('resize', handleResize);
 
-        const handleClick = (e) => {
-            if (!onStarClick) return;
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            const stars = starsRef.current;
-            let closest = null;
-            let closestDist = Infinity;
-            const clickRadius = 40;
-
-            for (let i = 0; i < stars.length; i++) {
-                const star = stars[i];
-                if (!star.clickable) continue;
-                const dx = star.x - x;
-                const dy = star.y - y;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < clickRadius && dist < closestDist) {
-                    closest = star;
-                    closestDist = dist;
-                }
-            }
-
-            if (closest && typeof closest.factIndex === 'number') {
-                onStarClick(closest.factIndex);
-            }
-        };
-
-        canvas.addEventListener('pointerdown', handleClick);
-
         return () => {
             cancelAnimationFrame(animationId);
             window.removeEventListener('resize', handleResize);
-            canvas.removeEventListener('pointerdown', handleClick);
         };
-    }, [initStars, onStarClick]);
-
-    const hoverRadius = 42;
+    }, [initStars]);
 
     useEffect(() => {
         const handleMove = (e) => {
             mouseRef.current = { x: e.clientX, y: e.clientY };
-            const canvas = canvasRef.current;
-            if (!canvas || !onStarClick) return;
-            const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
-            const x = (e.clientX - rect.left) * scaleX;
-            const y = (e.clientY - rect.top) * scaleY;
-            const stars = starsRef.current;
-            let overClickable = false;
-            for (let i = 0; i < stars.length; i++) {
-                const star = stars[i];
-                if (!star.clickable) continue;
-                const dx = star.x - x;
-                const dy = star.y - y;
-                if (Math.sqrt(dx * dx + dy * dy) < hoverRadius) {
-                    overClickable = true;
-                    break;
-                }
-            }
-            canvas.style.cursor = overClickable ? 'pointer' : 'default';
         };
 
         const handleLeave = () => {
             mouseRef.current = { x: null, y: null };
             lastMouseRef.current = { x: null, y: null };
-            const canvas = canvasRef.current;
-            if (canvas) canvas.style.cursor = 'default';
         };
 
         window.addEventListener('pointermove', handleMove);
@@ -263,13 +275,27 @@ function Constellation({ onStarClick }) {
             window.removeEventListener('pointermove', handleMove);
             window.removeEventListener('pointerleave', handleLeave);
         };
-    }, [onStarClick]);
+    }, []);
 
     return (
-        <canvas
-            ref={canvasRef}
-            className="absolute inset-0 z-[5] cursor-default"
-        />
+        <>
+            <canvas
+                ref={canvasRef}
+                className="absolute inset-0 z-[5] cursor-default"
+            />
+            <div className="absolute inset-0 z-[6] pointer-events-none">
+                {CLICKABLE_ANCHORS.map((anchor, index) => (
+                    <div key={index} className="pointer-events-auto">
+                        <ClickableStar
+                            anchor={anchor}
+                            index={index}
+                            onClick={onStarClick}
+                            time={time}
+                        />
+                    </div>
+                ))}
+            </div>
+        </>
     );
 }
 
@@ -361,9 +387,6 @@ export function PortfolioHero() {
                     className="pointer-events-none absolute bottom-[18%] left-1/2 z-20 -translate-x-1/2 animate-[factCardIn_0.8s_ease-out]"
                     aria-hidden
                 >
-                    <p className="text-[0.9rem] tracking-[0.15em] uppercase text-neutral-500/80">
-                        click the yellow stars to learn more
-                    </p>
                 </div>
             )}
 
@@ -434,12 +457,13 @@ export function PortfolioHero() {
             </div>
 
             <div
-                className={`pointer-events-none absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center transition-opacity duration-500 ${scrollCueVisible ? 'opacity-100' : 'opacity-0'}`}
+                className={`pointer-events-none absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-2 transition-opacity duration-500 ${scrollCueVisible ? 'opacity-100' : 'opacity-0'}`}
                 aria-hidden
             >
                 <span className="flex h-7 w-7 flex-col items-center rounded-full border border-neutral-500/70">
                     <span className="mt-1.5 h-1 w-1 rounded-full bg-neutral-400 animate-[scrollBounce_2s_ease-in-out_infinite]" />
                 </span>
+                <span className="text-[10px] uppercase tracking-[0.2em] text-neutral-500">scroll</span>
             </div>
 
         </section>

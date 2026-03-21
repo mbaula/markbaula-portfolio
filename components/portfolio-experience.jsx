@@ -47,14 +47,8 @@ export function PortfolioExperience() {
     return (
         <section
             id="experience"
-            className="relative flex min-h-screen w-full items-center overflow-hidden bg-[#0a0a0a] py-12"
+            className="relative flex min-h-screen w-full items-center overflow-hidden bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#0a0a0a] py-12"
         >
-            {/* Animated noise background */}
-            <div
-                className="experience-bg-noise pointer-events-none absolute inset-0 z-0 opacity-[0.07]"
-                aria-hidden
-            />
-
             <div className="relative z-10 mx-auto flex w-[min(1120px,100%-1.5rem)] flex-col gap-6">
                 <div>
                     <h2 className="font-heading text-2xl sm:text-3xl">Experience</h2>
