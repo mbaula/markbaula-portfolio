@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
 const CIBC_LOGO = 'https://logos-world.net/wp-content/uploads/2021/05/CIBC-Emblem.png';
-const BORDERLESS_LOGO = 'https://media.licdn.com/dms/image/v2/D560BAQFbn0v2utGhCw/company-logo_200_200/company-logo_200_200/0/1733953620866/hireborderless_logo?e=1775088000&v=beta&t=IVrXyRt2BloSQt6alnIY8VHEGo9lQk9eymLLZM2uUuM';
+const BORDERLESS_LOGO = 'https://media.licdn.com/dms/image/v2/D560BAQFbn0v2utGhCw/company-logo_200_200/company-logo_200_200/0/1733953620866/hireborderless_logo?e=1778112000&v=beta&t=VALK_YoeqOmCHPbCFdnvx6JJmbVI4GxF8D1A1BTFrwk';
 const UW_LOGO = 'https://upload.wikimedia.org/wikipedia/en/6/6e/University_of_Waterloo_seal.svg';
 
 const ARXIV_LINK = 'https://arxiv.org/abs/2305.14177';
